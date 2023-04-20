@@ -14,15 +14,15 @@ L2z = 0;
 L2y = D;
 L1 = [0,0,L1z];
 L2 = [0,L2y,L2z];
-Nl = 10; % Number of unit cells in one direction
+Nl = 20; % Number of unit cells in one direction
 N = 2*Nl;
 Nn = 2; 
 
 R = 0.1*ones(1,N);
 
-
-c10 = -1/3*L1;
-c20 = 1/3*L1;
+% equidistant modes
+c10 = -1/4*L1;
+c20 = 1/4*L1;
 c = [];
 counter = 1;
 for l1 = 1:Nl
@@ -87,16 +87,47 @@ for j = 1:N
     plot(1:N,real(modes_skin(:,j)))
 end
 
-%%% Asymptotic 
-matC_asym = makeC_skin_asymp(matC_static,gamma_skin,c);
-GCM_asym = diag(delta.*v2./vol)*matC_asym;
-
-[evec_asym,eval] = eig(GCM_asym);
-modes_asym = evec_asym(:,I);
-
+% compute the degree of localization
+N_deg = 15;
+gammas = linspace(0,0.8,N_deg);
+average_deg = zeros(N_deg,1);
+max_deg = zeros(N_deg,1);
+min_deg= zeros(N_deg,1);
+for i = 1:N_deg
+    degs = zeros(N,1);
+    matC_skin = MakeCmn_skin(gammas(i),R,c,k0,N_multi);
+    GCM_skin = diag(delta.*v2./vol)*matC_skin;
+    [evec_deg,~] = eig(GCM_skin);
+    for j = 1:N
+        degs(j) = norm(evec_deg(:,j),Inf)/norm(evec_deg(:,j),2);
+    end
+    average_deg(i) = max(degs);
+    max_deg(i) = mean(degs);
+    min_deg(i) = min(degs);
+end
 figure
 hold on
-for j = 1:N
-    subplot(5,N/5,j); 
-    plot(1:N,real(modes_asym(:,j)))
-end
+plot(gammas,average_deg);
+plot(gammas,max_deg);
+plot(gammas,min_deg);
+legend('average','max','min')
+xlabel('\gamma')
+ylabel('Degrees of localization')
+%%% Compute eigenmodes
+[evec_skin,eval_skin] = eig(GCM_skin);
+[resonances_skin,I] = sort(sqrt(diag(eval_skin)),'ComparisonMethod','real');
+modes_skin = evec_skin(:,I);
+
+%%% Asymptotic 
+% matC_asym = makeC_skin_asymp(matC_static,gamma_skin,c);
+% GCM_asym = diag(delta.*v2./vol)*matC_asym;
+% 
+% [evec_asym,eval] = eig(GCM_asym);
+% modes_asym = evec_asym(:,I);
+% 
+% figure
+% hold on
+% for j = 1:N
+%     subplot(5,N/5,j); 
+%     plot(1:N,real(modes_asym(:,j)))
+% end
