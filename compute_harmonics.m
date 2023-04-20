@@ -11,7 +11,7 @@ function f_out = compute_harmonics(fun,Ri,N_multi)
 end
 
 function res = trapez(fun,xmin,xmax,ymin,ymax)
-    N = 200;
+    N = 100;
     x= linspace(xmin,xmax,N);
     y = linspace(ymin,ymax,N);
     xmid = (x(1:end-1)+x(2:end))/2;

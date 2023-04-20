@@ -53,7 +53,7 @@ N_multi = 2;
 %%% Compute the static capacitance matrix
 % Maximum order for multipole expansion (n = 0, 1, ..., N_multi)
 % If we use higher order, then accuracy improves. Usually 0 is sufficiently large.
-gamma_skin = 0;
+gamma_skin = 0.2;
 
 matC_static = MakeC_mn(R,c,k0,N_multi);
 GCM_static = diag(delta.*v2./vol)*matC_static;
@@ -72,7 +72,7 @@ end
 
 %%% Compute the skin capacitance matrix using Multipole
 
-matC_skin = MakeCmn_skin(0,R,c,k0,N_multi);
+matC_skin = MakeCmn_skin(gamma_skin,R,c,k0,N_multi);
 GCM_skin = diag(delta.*v2./vol)*matC_skin;
 
 %%% Compute eigenmodes
@@ -88,7 +88,7 @@ for j = 1:N
 end
 
 %%% Asymptotic 
-matC_asym = makeC_skin_asymp(matC_static,gamma_skin,c,N);
+matC_asym = makeC_skin_asymp(matC_static,gamma_skin,c);
 GCM_asym = diag(delta.*v2./vol)*matC_asym;
 
 [evec_asym,eval] = eig(GCM_asym);
