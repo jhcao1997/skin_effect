@@ -1,5 +1,4 @@
 function w = Wigner3j( j123, m123 )
-
 % Compute the Wigner 3j symbol using the Racah formula. 
 %
 % W = Wigner3j( J123, M123 ) 
@@ -22,10 +21,8 @@ function w = Wigner3j( j123, m123 )
 %
 % By Kobi Kraus, Technion, 25-6-08.
 % Updated 1-8-13.
-
 j1 = j123(1); j2 = j123(2); j3 = j123(3);
 m1 = m123(1); m2 = m123(2); m3 = m123(3);
-
 % Input error checking
 if any( j123 < 0 ),
     error( 'The j must be non-negative' )
@@ -34,7 +31,6 @@ elseif any( rem( [j123, m123], 0.5 ) ),
 elseif any( rem( (j123 - m123), 1 ) )
     error( 'j123 and m123 do not match' );
 end
-
 % Selection rules
 if ( j3 > (j1 + j2) ) || ( j3 < abs(j1 - j2) ) ... % j3 out of interval
    || ( m1 + m2 + m3 ~= 0 ) ... % non-conserving angular momentum
@@ -48,17 +44,14 @@ if ~any( m123 ) && rem( sum( j123 ), 2 ), % m1 = m2 = m3 = 0 & j1 + j2 + j3 is o
     w = 0;
     return
 end
-
 % Evaluation
 t1 = j2 - m1 - j3;
 t2 = j1 + m2 - j3;
 t3 = j1 + j2 - j3;
 t4 = j1 - m1;
 t5 = j2 + m2;
-
 tmin = max( 0,  max( t1, t2 ) );
 tmax = min( t3, min( t4, t5 ) );
-
 t = tmin : tmax;
 w = sum( (-1).^t .* exp( -ones(1,6) * gammaln( [t; t-t1; t-t2; t3-t; t4-t; t5-t] +1 ) + ...
                          gammaln( [j1+j2+j3+1, j1+j2-j3, j1-j2+j3, -j1+j2+j3, j1+m1, j1-m1, j2+m2, j2-m2, j3+m3, j3-m3] +1 ) ...

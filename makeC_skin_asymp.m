@@ -1,9 +1,10 @@
-function C = makeC_skin(C1,eps_ski,c,N_skin)
+function C = makeC_skin_asymp(C1,eps_ski,c,N_skin)
 C = C1;
-N = length(c);
+cz = c(:,3);
+N = length(cz);
     for l = 1:N_skin
         for j = 1:N_skin
-            C(l,j)=C1(l,j)*(1+0.5i*eps_ski*(c(l)-c(j)));
+            C(l,j)=C1(l,j)*(1-eps_ski*(cz(l)-cz(j)));
         end
     end
 %     for l = N_skin+1:N

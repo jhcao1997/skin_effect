@@ -1,33 +1,31 @@
+% Mirrored Supercell edge modes, used to produce Figure 7 and 8.
 
 % Number of Resonators
-k = 50;
+k = 20;
 ll = 1;
-N_skin = k*ll;
-N = N_skin;
+N = k*ll;
+
 
 % Perturbed case, change eps = 0 to obatian the unperturbed case
 eps = 0;
 Omega = 0.2;
-eps_skin =0.02;
-[V,f_exp,f_exp_im,ind,c,M_0] = produce_edge_supercell(k,ll,eps,Omega,eps_skin,N);
+eps_skin = 0.3*1i;
+[V,f_exp,f_exp_im,ind,c,M_0] = produce_edge_supercell(k,ll,eps,Omega,eps_skin);
 
 % Plot all the bloch modes
 figure 
 hold on 
 for j = 1:N
-    W = exp(-eps_skin*1i*c(:,1)).*V(1:N,j);
-%    W = exp(0*1i*c(:,1)).*V(1:N,j);
-     subplot(5,ceil(N/5),j)
-     hold on
-    plot(1:N,real(W),'b');
-%     plot(1:N,imag(W),'r');
-    xline(N_skin)
-%     legend('Re','Im')
-%     xlabel(strcat('The serial number of the resonators',' ,eps=',num2str(eps)))
+    W(:,j)
+    = exp(eps_skin*1i*c(:,1)).*V(1:N,1);
+    subplot(5,ceil(N/5),j)
+    plot(1:N,real(V(1:N,j)));
+    xlabel(strcat('The serial number of the resonators',' ,eps=',num2str(eps)))
+    ylabel('Re(\Psi)')
 end
 
-function [V,f_exp,f_exp_im,ind,c,M_0] = produce_edge_supercell(k,ll,eps,Omega,eps_skin,N)
-    N_skin = k*ll;
+function [V,f_exp,f_exp_im,ind,c,M_0] = produce_edge_supercell(k,ll,eps,Omega,eps_skin)
+    N = k*ll;
     % radii
     R = 0.1*ones(1,N);
 
@@ -90,7 +88,7 @@ function [V,f_exp,f_exp_im,ind,c,M_0] = produce_edge_supercell(k,ll,eps,Omega,ep
 
     %% Compute the resonances using the capacitance matrix, which is approximated using the multipole expansion method
     C = capacitance_2D(c,R,rho0,rho_b,kappa0,kappa_b,delta);
-    C = makeC_skin(C,eps_skin,cx,N_skin);
+    C = makeC_skin(C,eps_skin,cx);
     vol = 4/3*pi*R.^3;
     vol = vol';
     CoeffMat = @(t) makeM(t,delta,kappa0,rho0,vol,C,rhot, sqrtkappat, w3);
