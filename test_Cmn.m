@@ -8,37 +8,20 @@
 clear all
 %% Define parameters
 %%% Geometry
-D = 1; 
-L1z = D;
-L2z = 0;
-L2y = D;
-L1 = [0,0,L1z];
-L2 = [0,L2y,L2z];
-Nl = 20; % Number of unit cells in one direction
-N = 2*Nl;
-Nn = 2; 
+% Define the length of the unit cell
+N = 25;
+cx = [0:1:N-1]';
+cy = zeros(N,1);
+cz = zeros(N,1);
+c = [cx cy cz];
 
-R = 0.1*ones(1,N);
-
-% equidistant modes
-c10 = -1/4*L1;
-c20 = 1/4*L1;
-c = [];
-counter = 1;
-for l1 = 1:Nl
-    for l2 = 1:1
-        c = [c; c10 + l1*L1 + l2*L2; c20 + l1*L1 + l2*L2];
-        ind(l1,l2) = counter;
-        counter = counter + 1;
-    end
-end
-
+R = 0.1*ones(N,1)';
 %%% Plot the geometry
 figure, hold on
 t = linspace(0,2*pi);
 for n = 1:N
-    plot(c(n,3)+R(n)*cos(t), c(n,2)+R(n)*sin(t),'k')  
-    text(c(n,3),c(n,2),num2str(n))
+    plot(c(n,1)+R(n)*cos(t), c(n,2)+R(n)*sin(t),'k')  
+    text(c(n,1),c(n,2),num2str(n))
 end
 daspect([1 1 1])
 hold off
@@ -53,7 +36,7 @@ N_multi = 2;
 %%% Compute the static capacitance matrix
 % Maximum order for multipole expansion (n = 0, 1, ..., N_multi)
 % If we use higher order, then accuracy improves. Usually 0 is sufficiently large.
-gamma_skin = 0.2;
+gamma_skin = 0.1;
 
 matC_static = MakeC_mn(R,c,k0,N_multi);
 GCM_static = diag(delta.*v2./vol)*matC_static;
@@ -64,6 +47,7 @@ GCM_static = diag(delta.*v2./vol)*matC_static;
 modes_static = evec_static(:,I);
 
 figure
+title("modes_static")
 hold on
 for j = 1:N
     subplot(5,N/5,j); 
@@ -76,16 +60,36 @@ matC_skin = MakeCmn_skin(gamma_skin,R,c,k0,N_multi);
 GCM_skin = diag(delta.*v2./vol)*matC_skin;
 
 %%% Compute eigenmodes
-[evec_skin,eval_skin] = eig(GCM_skin);
+[evec_skin,eval_skin,eigen_left] = eig(GCM_skin);
 [resonances_skin,I] = sort(sqrt(diag(eval_skin)),'ComparisonMethod','real');
 modes_skin = evec_skin(:,I);
 
 figure
+title("modes_skin")
 hold on
 for j = 1:N
     subplot(5,N/5,j); 
-    plot(1:N,real(modes_skin(:,j)))
+    hold on
+    plot(1:N,real(exp(-gamma_skin*cx).*modes_skin(:,j)))
+%     plot(1:N,real(eigen_left(:,j)))
+
+%     plot(1:N,imag(modes_skin(:,j)))
 end
+
+%%% Asymptotic 
+matC_asym = makeC_skin_asymp(matC_static,gamma_skin,c);
+GCM_asym = diag(delta.*v2./vol)*matC_asym;
+
+[evec_asym,eval] = eig(GCM_asym);
+modes_asym = evec_asym(:,I);
+% 
+% figure
+% hold on
+% for j = 1:N
+%     subplot(5,N/5,j); 
+%     plot(1:N,real(modes_asym(:,j)))
+% end
+
 
 % compute the degree of localization
 N_deg = 15;
@@ -101,8 +105,8 @@ for i = 1:N_deg
     for j = 1:N
         degs(j) = norm(evec_deg(:,j),Inf)/norm(evec_deg(:,j),2);
     end
-    average_deg(i) = max(degs);
-    max_deg(i) = mean(degs);
+    average_deg(i) = mean(degs);
+    max_deg(i) = max(degs);
     min_deg(i) = min(degs);
 end
 figure
@@ -118,16 +122,3 @@ ylabel('Degrees of localization')
 [resonances_skin,I] = sort(sqrt(diag(eval_skin)),'ComparisonMethod','real');
 modes_skin = evec_skin(:,I);
 
-%%% Asymptotic 
-% matC_asym = makeC_skin_asymp(matC_static,gamma_skin,c);
-% GCM_asym = diag(delta.*v2./vol)*matC_asym;
-% 
-% [evec_asym,eval] = eig(GCM_asym);
-% modes_asym = evec_asym(:,I);
-% 
-% figure
-% hold on
-% for j = 1:N
-%     subplot(5,N/5,j); 
-%     plot(1:N,real(modes_asym(:,j)))
-% end
