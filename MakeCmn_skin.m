@@ -9,8 +9,9 @@ M = N*N_block;
 
 %  Assume all Ris are equal
 fun = @(theta,phi) exp(gamma*R(1)*sin(theta)*cos(phi));
-fun2 = @(theta,phi) exp(-gamma*R(1)*sin(theta)*cos(phi));
 f1_out = compute_harmonics(fun,N_multi);
+
+fun2 = @(theta,phi) 1;
 f2_out = compute_harmonics(fun2,N_multi);
 
 
@@ -23,7 +24,7 @@ for j = 1:N
     phi_j = zeros(M,1);
     phi_j(N_block*(j-1)+1:N_block*j) =  R(j)^2*exp(gamma*cx(j))*f1_out;
     psi_j_temp = zeros(M,1); 
-    psi_j_temp(N_block*(j-1)+1:N_block*j) = exp(-gamma*cx(j))*f2_out;
+    psi_j_temp(N_block*(j-1)+1:N_block*j) = f2_out;
     y = L\(P*psi_j_temp);
     psis(:,j) = U\y;
     phis(:,j) = phi_j;

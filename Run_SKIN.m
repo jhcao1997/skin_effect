@@ -1,109 +1,153 @@
+%
+%
+% 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% clear all
+%% Define parameters
+%%% Geometry
+% Define the length of the unit cell
+N = 10;
+cx = [0:1:N-1]';
+cy = zeros(N,1);
+cz = zeros(N,1);
+c = [cx cy cz];
 
-% Number of Resonators
-k = 50;
-ll = 1;
-N_skin = k*ll;
-N = N_skin;
+R = 0.3*ones(N,1)';
+%%% Plot the geometry
+figure, hold on
+t = linspace(0,2*pi);
+for n = 1:N
+    plot(c(n,1)+R(n)*cos(t), c(n,2)+R(n)*sin(t),'k')  
+    text(c(n,1),c(n,2),num2str(n))
+end
+daspect([1 1 1])
+hold off
+close 
 
-% Perturbed case, change eps = 0 to obatian the unperturbed case
-eps = 0;
-Omega = 0.2;
-eps_skin =0.02;
-[V,f_exp,f_exp_im,ind,c,M_0] = produce_edge_supercell(k,ll,eps,Omega,eps_skin,N);
+vol = 4*pi*R.^3/3;
+k0 = 0.0000001;
+delta = 10^(-5);
+v2 = ones(1,N);
+N_multi = 2;
+%%% Compute the static capacitance matrix
+% Maximum order for multipole expansion (n = 0, 1, ..., N_multi)
+% If we use higher order, then accuracy improves. Usually 0 is sufficiently large.
+gamma_skin = 1;
 
-% Plot all the bloch modes
+matC_static = MakeC_mn(R,c,k0,N_multi);
+GCM_static = diag(delta.*v2./vol)*matC_static;
+
+%%% Compute eigenmodes
+[evec_static,eval_static] = eig(GCM_static);
+[resonances_static,I] = sort(sqrt(diag(eval_static)),'ComparisonMethod','real');
+modes_static = evec_static(:,I);
+
+
+% compute the normalization factor
+fun = @(theta,phi,r) exp(gamma_skin*r*sin(theta)*cos(phi))*r^2*sin(theta);
+int_A = int_trapez_3(fun,200,0,pi,0,2*pi,0,R(1));
+A_norm = exp(gamma_skin*cx)*int_A;
+
+%%% Compute the skin capacitance matrix using Multipole
+
+matC_skin = MakeCmn_skin(gamma_skin,R,c,k0,N_multi);
+
+GCM_skin = diag(delta.*v2./A_norm')*matC_skin;
+
+
+%% compute winding number
+f = symbol(GCM_skin,14);
+thetas = linspace(0,2*pi,100);
+fs = [];
+for theta = thetas
+    fs = [fs f(exp(1i*theta))];
+%     scatter(real(fs),imag(fs),[],linspace(0,2*pi,length(fs)))
+end
+figure
+H = arrowPlot(real(fs), imag(fs), 'number', 10,'color','k');
+hold on
+plot(real(eig(GCM_skin)),imag(eig(GCM_skin)),'*','Color','k')
+
+k = 10;
+GCM_k = zeros(size(GCM_skin));
+for i = -k:k
+    GCM_k = GCM_k + diag(diag(GCM_skin,i),i);
+end
+
+k = floor((N-1)/2);
+means = zeros(k,N);
+GCM_k = diag(diag(GCM_skin));
+for i = 1:10
+    GCM_k = GCM_k + diag(diag(GCM_skin,i),i);
+    GCM_k = GCM_k + diag(diag(GCM_skin,-i),-i);
+    [evec_skin,eval_skin,eigen_left] = eig(GCM_k);
+    means(i,:) = mean(abs(evec_skin),2);
+end
+
+errors= zeros(1,k);
+for i= 1:k
+    errors(i) = norm(means(i,:) -means(k,:) )/norm(means(k,:));
+end
+
+figure
+plot([1:k],errors,'k')
+
 figure 
-hold on 
+hold on
+for i = 10:k
+    plot(means(i,:))
+end
+legendStrings = "k = " + string([10:k]);
+legend(legendStrings)
+
+%%% Compute eigenmodes
+[evec_skin,eval_skin,eigen_left] = eig(GCM_k);
+[evec_skin2,eval_skin2,eigen_left2] = eig(GCM_skin);
+
+[resonances_skin,I] = sort(sqrt(diag(eval_skin)),'ComparisonMethod','real');
+[resonances_skin,I2] = sort(sqrt(diag(eval_skin2)),'ComparisonMethod','real');
+
+modes_skin = evec_skin(:,I);
+modes_skin2 = evec_skin2(:,I);
+
+figure
+for j = 1:20
+    subplot(ceil(20/5),5,j)
+    hold on
+    plot(1:N,real(modes_skin(:,j)),'k');
+    plot(1:N,real(modes_skin2(:,j)),'.-k')
+end
+
+
+% prediction of the mathematical model 
+% modes_math = zeros(N,N);
+% for k = 1:N
+%     for i = 1:N
+%     modes_math(i,k) = (GCM_skin(2,1)/GCM_skin(1,2))^(i/2)*sin(i*k*pi/(N+1));
+%     end
+%     modes_math(:,k) = modes_math(:,k)/norm(modes_math(:,k));
+% end
+
+
+
+figure
+title("Eigenmodes for \gamma =" + num2str(gamma_skin))
+hold on
+%         plot(cx,mean(abs(modes_math),2),'k','linewidth',3)
+        plot(cx,mean(abs(modes_skin2),2),'r','linewidth',3)
+%         plot(cx,mean(abs(modes_skin),2),'g','linewidth',3)
 for j = 1:N
-    W = exp(-eps_skin*1i*c(:,1)).*V(1:N,j);
-%    W = exp(0*1i*c(:,1)).*V(1:N,j);
-     subplot(5,ceil(N/5),j)
-     hold on
-    plot(1:N,real(W),'b');
-%     plot(1:N,imag(W),'r');
-    xline(N_skin)
-%     legend('Re','Im')
-%     xlabel(strcat('The serial number of the resonators',' ,eps=',num2str(eps)))
+%     plot(1:N,real(modes_skin(:,j)),'b')
+plot(cx,real(modes_skin2(:,N-j+1)),'color', [.5 .5 .5])
+
+% %     plot(1:N,real(eigen_left(:,j)))
+% %     plot(1:N,imag(modes_skin(:,j)))
 end
+        plot(cx,mean(abs(modes_skin2),2),'r','linewidth',3)
 
-function [V,f_exp,f_exp_im,ind,c,M_0] = produce_edge_supercell(k,ll,eps,Omega,eps_skin,N)
-    N_skin = k*ll;
-    % radii
-    R = 0.1*ones(1,N);
-
-    %%% Material parameters
-    rho0 = 1e3;             % background material
-    kappa0 = 1e3;           % background material
-    v = sqrt(kappa0/rho0);  % speed of sound in water
-
-    rho_b = 1;            % density of resonators  
-    kappa_b = 1;          % bulk modulus of resonators
-    v_b = sqrt(kappa_b/rho_b);  % speed of sound resonators
-
-    
-    % supercell
-    D = 1; 
-    L1x = D*sqrt(3);
-    L2x = D*sqrt(3)/2;
-    L2y = D*3/2;
-    L1 = [L1x,0];
-    L2 = [L2x,L2y];
-
-    eps = 3*R(1); %eps = 3*R;
-
-    L_unit = sqrt(3);
-    cx = [0];
+legend('Average of the absolute amplitudes','Eigenmodes')
 
 
-    for ii = 1: N-1
-        cx = [cx ; ii*L_unit];
-    end
-
-    phase_shift= zeros(N,1);   
-
-    cy = zeros(N,1);
-    c = [cx cy];
-    % Plot the geometry
-    figure, hold on
-    t = linspace(0,2*pi);
-    for n = 1:N
-        plot(cx(n)+R(n)*cos(t), cy(n)+R(n)*sin(t),'k')
-        text (cx(n), cy(n), num2str(n))
-    end
-    
-    daspect([1 1 1])
-    hold off
-    close
-
-    rhot = @(t) rho_b./(1 + eps*cos(Omega*t + phase_shift)); 
-
-    sqrtkappat = @(t) sqrt(kappa_b)*ones(N,1); % ./[1 + eps*sin(t + pi*(1:N))];
-    dkappa = @(t) 0*R;
-    d2kappa = @(t) 0*R;
-    w3 = @(t) 0*(1:N);
-
-    T = 2*pi/Omega;
-    steps = 1000;
-
-    % High contrast parameters \delta
-    delta=rho_b/rho0;
-
-    %% Compute the resonances using the capacitance matrix, which is approximated using the multipole expansion method
-    C = capacitance_2D(c,R,rho0,rho_b,kappa0,kappa_b,delta);
-    C = makeC_skin(C,eps_skin,cx,N_skin);
-    vol = 4/3*pi*R.^3;
-    vol = vol';
-    CoeffMat = @(t) makeM(t,delta,kappa0,rho0,vol,C,rhot, sqrtkappat, w3);
-    M_0 = delta*kappa0/rho0*inv(diag(vol))*C;
-    %% Solve for Psi
-    [Tspan, X_fundamental] = HillSolver(CoeffMat,T,steps); % X_fundamental = [Psi; dPsi/dt]
-    [TOUT, X_bloch,V_mode,V,D] = Hill2BlochModes(CoeffMat,T,steps);
-    
-    
-    %% Solve Floquet exp
-    X_T = squeeze(X_fundamental(end,:,:));
-    [V,d] = eig(X_T,'vector');
-    [f_exp,ind] = sort(imag(log(d)/T),'descend');
-    f_exp_im = real(log(d(ind))/T);
-    V = V(:,ind);
-end
