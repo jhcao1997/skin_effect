@@ -9,7 +9,7 @@
 %% Define parameters
 %%% Geometry
 % Define the length of the unit cell
-N = 50;
+N = 20;
 cx = [0:1:N-1]';
 cy = zeros(N,1);
 cz = zeros(N,1);
@@ -31,11 +31,11 @@ vol = 4*pi*R.^3/3;
 k0 = 0.0000001;
 delta = 10^(-5);
 v2 = ones(1,N);
-N_multi = 2;
+N_multi = 3;
 %%% Compute the static capacitance matrix
 % Maximum order for multipole expansion (n = 0, 1, ..., N_multi)
 % If we use higher order, then accuracy improves. Usually 0 is sufficiently large.
-gamma_skin = -1;
+gamma_skin = 1;
 
 matC_static = MakeC_mn(R,c,k0,N_multi);
 GCM_static = diag(delta.*v2./vol)*matC_static;
@@ -65,11 +65,13 @@ GCM_skin = diag(delta.*v2./A_norm')*matC_skin;
 %         scatter((abs(i-j)),abs(GCM_skin(i,j)),'*','black')
 %     end
 % end
-% set(gca,'xscale','log')
-% set(gca,'yscale','log')
-% xlabel('Distance between the indices |i-j|','FontSize',15)
-% ylabel('Value of the coefficients |C_{ij}|','FontSize',15)
-% set(gca,'TickLabelInterpreter','latex','FontSize',15)
+set(gca,'xscale','log')
+set(gca,'yscale','log')
+xlabel('Distance between the indices $|i-j|$','interpreter','latex')
+ylabel('Value of the coefficients $|C_{ij}|$','interpreter','latex')
+set(gca,'ticklabelinterpreter','latex')
+set(gca, 'FontSize',23)
+
 %% compute winding number
 
 
@@ -88,10 +90,10 @@ ev = eig(GCM_skin);
 % H = arrowPlot(real(fs), imag(fs), 'number', 10,'color','k');
 % hold on
 % plot(real(eig(GCM_skin)),imag(eig(GCM_skin)),'*','Color','k')
-% plot(real(ev(1)),imag(ev(1)),'*','Color','r')
-% xlabel('Real part','FontSize',18)
-% ylabel('Imaginary part','FontSize',18)
-% set(gca,'TickLabelInterpreter','latex','FontSize',18)
+plot(real(ev(1)),imag(ev(1)),'*','Color','r')
+xlabel('Real part','FontSize',18,'Interpreter','latex')
+ylabel('Imaginary part','FontSize',18,'Interpreter','latex')
+set(gca,'TickLabelInterpreter','latex','FontSize',23)
 
 GCM_k = zeros(N);
 k = 1;
@@ -141,12 +143,14 @@ figure
 hold on
 %         plot(cx,mean(abs(modes_math),2),'k','linewidth',3)
 %         plot(cx,mean(abs(modes_skin),2),'g','linewidth',3)
-for j = 1:N
-%     plot(1:N,real(modes_skin(:,j)),'b')
-plot(cx,real(modes_skin2(:,j)),'color', [.5 .5 .5])
+for j = 1:12
+subplot(3,4,j)
+
+    %     plot(1:N,real(modes_skin(:,j)),'b')
+plot(cx,real(modes_skin2(:,j)))
 
 end
-plot(cx,mean(abs(modes_skin2),2),'r','linewidth',3)
+% plot(cx,mean(abs(modes_skin2),2),'r','linewidth',3)
 % plot(cx,real(modes_skin2(:,1)),'color', 'r')
 
 xlabel('Position of the resonators','FontSize',25)

@@ -63,12 +63,12 @@ plot([1:N],mean_loc(:,end),'--r','linewidth', 3)
 for i = 1:N_stab
     plot([1:N],mean_loc(:,i),'color', [.5 .5 .5], 'linewidth', 1.5)
 end
-ylabel('Degree of condensation','FontSize',18)
-xlabel('Index of the resonators','FontSize',18)
-legend('Without perturbation','With random perturbations','Location','southeast','FontSize',18)
-xlim([1,N])
-set(gca,'XTick',[1,10,20,30])
-set(gca,'TickLabelInterpreter','latex','FontSize',18)
+ylabel('Degree of condensation','FontSize',16,'interpreter','latex')
+xlabel('Position of the resonators','FontSize',16,'interpreter','latex')
+% legend('Without perturbation','With random perturbations','Location','southeast','interpreter','latex')
+% xlim([1,30])
+% set(gca,'XTick',[1,10,20,30])
+set(gca,'TickLabelInterpreter','latex','FontSize',16)
 
 set(gca,)
 ylim([0,1])
