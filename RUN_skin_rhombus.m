@@ -1,5 +1,5 @@
-H = 5;
-N_0 = 2*50+1; % choose odd so that one resonator is in the origin
+H = 6;
+N_0 = 2*27+1; % choose odd so that one resonator is in the origin
 % this function gives the number of resonator on the i th line using linear
 % interpolation
 a = -N_0/(H-1);
@@ -12,7 +12,7 @@ cx = cx - (cx(1)+cx(end))/2;
 cy = zeros(N_0,1);
 %lets build a rhombus
 for l = 2:H
-    N_l = compute_N_l(l)
+    N_l = (compute_N_l(l))
     cx_l = d*[0:1:N_l-1]';
     cx_l = cx_l - (cx_l(1)+cx_l(end))/2;
     cx = [cx; cx_l];
@@ -21,7 +21,7 @@ for l = 2:H
     cx = [cx; cx_l];
     cy = [cy; -h*(l-1)*ones(N_l,1)];
 end
-N = size(cx,1);
+N = size(cx,1)
 [cx,ind] = sort(cx);
 cy = cy(ind);
 cz = zeros(N,1);
@@ -39,7 +39,7 @@ hold off
 
 vol = 4*pi*R.^3/3;
 k0 = 0.0000001;
-delta = 1./9000;
+delta = 10^(-5);
 v2 = ones(1,N);
 N_multi = 2;
 

@@ -42,7 +42,7 @@ hold off
 
 vol = 4*pi*R.^3/3;
 k0 = 0.0000001;
-delta = 1./9000;
+delta = 10^(-5);
 v2 = ones(1,N);
 N_multi = 2;
 

@@ -30,10 +30,10 @@ function produce_condensation(cx,modes_skin,N)
         plot(cx_proj,mean(deg_loc,2),'r','linewidth',3)
         plot(cx_proj,deg_loc(:,j),'color', [.5 .5 .5], 'linewidth', 1.5)
     end
-    xlabel('Position of the resonators','FontSize',18)
-    ylabel('Degree of condensation','FontSize',18)
-    set(gca,'TickLabelInterpreter','latex','FontSize',18)
-    set(gca,'XTick',[0:10:100])
-
+    xlabel('Position of the resonators','interpreter','latex','FontSize',20)
+    ylabel('Degree of condensation','interpreter','latex','FontSize',20)
+    set(gca,'TickLabelInterpreter','latex','FontSize',20)
+    set(gca,'XTick',[-25:10:25])
+    xlim([min(cx),max(cx)])
 end
 

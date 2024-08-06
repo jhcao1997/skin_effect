@@ -1,5 +1,4 @@
-% TimeCoder (2023). arrowPlot(X, Y, varargin) (https://www.mathworks.com/matlabcentral/fileexchange/62587-arrowplot-x-y-varargin), MATLAB Central File Exchange. Retrieved September 29, 2023.
-
+% TimeCoder (2024). arrowPlot(X, Y, varargin) (https://www.mathworks.com/matlabcentral/fileexchange/62587-arrowplot-x-y-varargin), MATLAB Central File Exchange. Retrieved August 6, 2024.
 % Copyright (c) 2017, TimeCoder
 % All rights reserved.
 % 

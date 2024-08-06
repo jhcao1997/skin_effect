@@ -4,8 +4,6 @@ function f = symbol(A,k)
     for i = -k:k
         as(i+k+1) = mean(diag(A,i));  
     end
-    
-    as = flip(as);
-    
+        
     f = @(z) z.^[-k:k]*as;
 end
